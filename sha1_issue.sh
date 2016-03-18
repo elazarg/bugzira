@@ -9,5 +9,5 @@ cd $WORKDIR
 git log --pretty=oneline 										\
 	| tr --delete '\[\]'										\
 	| sed "s/\($BUG_ID\).*?\($BUG_ID\)/\1 \2/g"					\
-	| grep --only-matching -i -E "$SHA1( $BUG_ID)+"				\
+	| grep -E "$SHA1( $BUG_ID)+" --only-matching -i				\
 	| sort --general-numeric-sort --key=2 --field-separator=-
