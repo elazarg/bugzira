@@ -15,8 +15,8 @@ by default, the basename of the folder is taken to be the component name
 
 run 
 
-    python extract_jira.py map_filename
+    python extract_jira.py < map_filename
 
 for example
 
-    python extract_jira.py cassandra.map.txt
+    python extract_jira.py < cassandra.map.txt
