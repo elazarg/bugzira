@@ -37,3 +37,33 @@ def getitem(m, key, default=None):
     'a helper for cases where the item is null'
     if m is None: return str(default)
     return m[key]
+
+
+import logging
+logging.basicConfig(filename='data/log.txt',level=logging.DEBUG)  
+
+def output(msg):
+    printer.info(msg)
+
+printer = logging.getLogger('printer')
+printer.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setFormatter(logging.Formatter('%(message)s'))
+printer.addHandler(ch)
+printer.propagate = False
+
+
+def log(msg):
+    logging.debug(msg)
+
+
+def retry_or_return_exception(f):
+    def wrap(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception:
+            try:
+                return f(*args, **kwargs)
+            except Exception as ex:
+                return ex
+    return wrap
