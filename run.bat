@@ -1,2 +1,2 @@
-python extract_jira.py data/hadoop.map.txt
+python extract_jira.py < data/hadoop.map.txt
 pause

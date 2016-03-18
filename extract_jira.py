@@ -1,9 +1,8 @@
 import json
 import sys
-from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor as Executor
-import base64
-
+import csv, io
+                        
 import utils
 
 URL = 'https://issues.apache.org/jira/'
@@ -14,6 +13,7 @@ FIELDS = ( ('issuetype', 'name'),
            ('description', '') )
 
 
+@utils.retry_or_return_exception(times=2)
 def fetch(issue_id):
     '''There is a Python api for jira: pip install jira
     but we wanted to avoid dependencies. and it's simple.''' 
@@ -23,16 +23,19 @@ def fetch(issue_id):
 
 def extract(issue):
     fs = issue['fields']
-    return [utils.getitem(fs[f], rep) if rep else json.dumps(fs[f])
+    return [utils.getitem(fs[f], rep) if rep else repr(fs[f])
             for f, rep in FIELDS]
 
 
-def csv(sha, issue_id, features):
-    return '{},{},{}'.format(sha, issue_id, ','.join(features))
+def to_csv(sha, issue_id, features):
+    issue_cat, issue_num = issue_id.split('-')
+    with io.StringIO() as s:
+        writer = csv.writer(s)
+        writer.writerow([sha, issue_cat, issue_num] + features)
+        s.seek(0)
+        return s.read().rstrip()
 
 
-@utils.retry_or_return_exception(times=2)
-@lru_cache(maxsize=1024)
 def fetch_feature(issue_id):
     return extract(fetch(issue_id))
 
@@ -41,22 +44,21 @@ def make_feature_vector(sha_issueid):
     sha, issue_id = sha_issueid
     features = fetch_feature(issue_id)
     if not isinstance(features, Exception):
-        utils.output(csv(sha, issue_id, features))
+        utils.output(to_csv(sha, issue_id, features))
 
         
 def flatten_lines(lines):
     '''lines are [sha1 bug_id bug_id bug_id...]
     This function flatten them into [sha1 bug_id]''' 
     for line in lines:
-        sha1, *issue_ids = line.split()
+        sha1, *issue_ids = line.strip().split()
         for issue_id in issue_ids:
             yield (sha1, issue_id)
 
 
 def main():
-    lines = utils.read_lines(sys.argv[1])
-    worklist = flatten_lines(lines)
-    with Executor(max_workers=20) as executor:
+    worklist = flatten_lines(sys.stdin)
+    with Executor(max_workers=150) as executor:
         utils.exhaust(executor.map(make_feature_vector, worklist))
 
 
