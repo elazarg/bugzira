@@ -1,9 +1,11 @@
 import json
 import urllib.request as request
 
+
 def write_json(filename, d):
     with open(filename, 'w') as f:
         json.dump(d, f, sort_keys=True, indent=0)
+
 
 def read_lines(filename):
     with open(filename) as f:
@@ -29,3 +31,9 @@ def read_file(filename):
 def fetch(url):
     with request.urlopen(url) as w:
         return w.read().decode('utf8')
+
+
+def getitem(m, key, default=None):
+    'a helper for cases where the item is null'
+    if m is None: return str(default)
+    return m[key]
