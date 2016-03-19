@@ -1,6 +1,6 @@
 import json
 import urllib.request as request
-
+import io, csv
 
 def write_lines(filename, iterable):
     with open(filename, 'w', encoding='utf8') as out:
@@ -73,3 +73,10 @@ def retry_or_return_exception(times=2):
 def exhaust(iterable):
     for _ in iterable:
         pass
+    
+
+def to_csv(iterable) -> str:
+    with io.StringIO() as s:
+        csv.writer(s).writerow(iterable)
+        s.seek(0)
+        return s.read().rstrip()
