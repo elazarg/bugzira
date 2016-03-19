@@ -9,13 +9,14 @@ import sys
 import utils
 
 URL = 'https://issues.apache.org/jira/'
-#           field     ,  subfield
-FIELDS = (('issuetype', 'name'),
-           ('priority', 'id'),
-           ('status', 'id'),
-           ('resolution', 'id'),
-           ('summary', ''),
-           ('description', ''))
+#           field     ,    subfield
+FIELDS = (('issuetype',     'name'),
+           ('priority',     'id'),
+           ('status',       'id'),
+           ('resolution',   'id')
+           #,('summary',      '')
+           #,('description',  '')
+           )
 
 @utils.retry(times=2)
 def fetch_issue(issue_key):
@@ -28,7 +29,8 @@ def fetch_issue(issue_key):
 
 def extract(issue):
     fs = issue['fields']
-    return [utils.getitem(fs[f], rep) if rep else repr(fs[f])
+    for f, rep in FIELDS:
+        return [utils.getitem(fs[f], rep) if rep else repr(fs[f])
             for f, rep in FIELDS]
 
 
@@ -42,10 +44,11 @@ def fetch_feature(issue_key):
 
 
 def make_feature_vector(sha_issuekey):
-    sha, issue_id = sha_issuekey
+    sha, issue_key = sha_issuekey
     try:
-        features = fetch_feature(issue_id)
-        utils.output(to_csv(sha, issue_id, features))
+        json_features = fetch_issue(issue_key)
+        json_features['sha'] = sha
+        utils.output(json.dumps(json_features))
     except Exception:
         # we intentionally ignore failed fetches
         # TODO: log such failures 

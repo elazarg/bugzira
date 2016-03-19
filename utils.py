@@ -2,6 +2,7 @@ import json
 import urllib.request as request
 import io, csv
 
+
 def write_lines(filename, iterable):
     with open(filename, 'w', encoding='utf8') as out:
         for t in iterable:
@@ -42,6 +43,7 @@ def getitem(m, key, default=None):
 import logging
 logging.basicConfig(filename='data/log.txt', level=logging.DEBUG)  
 
+
 def output(msg):
     printer.info(msg)
 
@@ -79,5 +81,4 @@ def exhaust(iterable):
 def to_csv(iterable) -> str:
     with io.StringIO() as s:
         csv.writer(s).writerow(iterable)
-        s.seek(0)
-        return s.read().rstrip()
+        return s.getvalue().rstrip()
