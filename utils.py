@@ -40,7 +40,7 @@ def getitem(m, key, default=None):
 
 
 import logging
-logging.basicConfig(filename='data/log.txt',level=logging.DEBUG)  
+logging.basicConfig(filename='data/log.txt', level=logging.DEBUG)  
 
 def output(msg):
     printer.info(msg)
@@ -57,18 +57,19 @@ def log(msg):
     logging.debug(msg)
 
 
-def retry_or_return_exception(times=2):
+def retry(times=2):
     assert times > 0
-    def retry_or_return_exception(f):
+    def retry(f):
         def wrap(*args, **kwargs):
-            for _ in range(times):
+            for i in range(times, 0, -1):
                 try:
                     return f(*args, **kwargs)
-                except Exception as ex:
-                    error = ex
-            return error
+                except Exception:
+                    if i == 1:
+                        raise
         return wrap
-    return retry_or_return_exception
+    return retry
+
 
 def exhaust(iterable):
     for _ in iterable:
