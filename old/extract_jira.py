@@ -7,31 +7,22 @@ import json
 import sys
                         
 import utils
-
-URL = 'https://issues.apache.org/jira/'
-#           field     ,    subfield
-FIELDS = (('issuetype',     'name'),
-           ('priority',     'id'),
-           ('status',       'id'),
-           ('resolution',   'id')
-           #,('summary',      '')
-           #,('description',  '')
-           )
+import config
 
 @utils.retry(times=2)
 def fetch_issue(issue_key):
     '''There is a Python api for jira: pip install jira
     but we wanted to avoid dependencies. and it's simple.''' 
-    raw_issue = utils.fetch(URL + 'rest/api/2/issue/' + issue_key \
-                                + '?fields=' + ','.join(f for f, _rep in FIELDS))
+    raw_issue = utils.fetch(config.URL + 'rest/api/2/issue/' + issue_key \
+                                + '?fields=' + ','.join(f for f, _rep in config.FIELDS))
     return json.loads(raw_issue)
 
 
 def extract(issue):
     fs = issue['fields']
-    for f, rep in FIELDS:
+    for f, rep in config.FIELDS:
         return [utils.getitem(fs[f], rep) if rep else repr(fs[f])
-            for f, rep in FIELDS]
+            for f, rep in config.FIELDS]
 
 
 def to_csv(sha, issue_key, features):
@@ -47,7 +38,7 @@ def make_feature_vector(sha_issuekey):
     sha, issue_key = sha_issuekey
     try:
         json_features = fetch_issue(issue_key)
-        json_features['sha'] = sha
+        json_features['commit'] = sha
         utils.output(json.dumps(json_features))
     except Exception:
         # we intentionally ignore failed fetches

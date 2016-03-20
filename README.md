@@ -3,15 +3,15 @@ feature extraction from JIRA
 
 ## tl;dr
 
-    ./sha1_issue.sh ../hadoop | python extract_jira.py
+    ./find_commits.sh ../hadoop | python fetch_and_extract.py csv
 
 ## preparation
 run
 
-    ./sha1_issue.sh git_folder
+    ./find_commits.sh git_folder
 for example
 
-    ./sha1_issue.sh ../cassandra > cassandra.map.txt
+    ./find_commits.sh ../cassandra > cassandra.map.txt
 by default, the basename of the folder is taken to be the component name
 
 ## extraction
@@ -19,8 +19,8 @@ by default, the basename of the folder is taken to be the component name
 
 run 
 
-    python extract_jira.py < map_filename
+    python fetch_and_extract.py < map_filename
 
 for example
 
-    python extract_jira.py < cassandra.map.txt
+    python fetch_and_extract.py < cassandra.map.txt
