@@ -2,6 +2,7 @@
 Extracting features from bugs mentioned in commits, on apache-projects using JIRA
 
 https://issues.apache.org/jira/secure/BrowseProjects.jspa#all
+
 https://git.apache.org/
 
 ## Examples
