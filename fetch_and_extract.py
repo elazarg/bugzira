@@ -16,7 +16,7 @@ FIELDS = (('issuetype',     'name'),
            ('status',       'id'),
            ('resolution',   'id'),
            ('summary',      ''),
-           ('description',  '')
+           #('description',  '')
            )
 
 @utils.retry(times=2)
@@ -31,7 +31,11 @@ def fetch_issue(issue_key):
 
 def fetch_and_compose(sha_issuekey):
     sha, issue_key = sha_issuekey
-    res = fetch_issue(issue_key)
+    try:
+        res = fetch_issue(issue_key)
+    except:
+        # ignore communication failure
+        return
     if not RAW:
         res = get_filtered(res)
         res['commit'] = sha
@@ -48,8 +52,11 @@ def get_filtered(issue):
     res['project'], res['key'] = issue['key'].split('-')
     for field, subfield in FIELDS:
         res[field] = issue['fields'][field]
-        if subfield and not isinstance(res[field], (str, type(None))):
-            res[field] = res[field].get(subfield)
+        if not subfield:
+            res[field] = repr(res[field])
+        else:
+            if not isinstance(res[field], (str, type(None))):
+                res[field] = res[field].get(subfield)
     return res
 
 

@@ -3,7 +3,7 @@ feature extraction from JIRA
 
 ## tl;dr
 
-    ./find_commits.sh ../hadoop | python fetch_and_extract.py csv
+    ./run.sh ../hadoop
 
 ## preparation
 run

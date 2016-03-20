@@ -1,7 +1,7 @@
 import json
 import urllib.request as request
 import io, csv
-
+import sys
 
 def write_lines(filename, iterable):
     with open(filename, 'w', encoding='utf8') as out:
@@ -40,15 +40,11 @@ def getitem(m, key, default=None):
     return m[key]
 
 
-# import logging
-# logging.basicConfig(level=logging.DEBUG, format='%(message)s')  
+import logging
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(message)s')  
 
-
-import threading
-outputlock = threading.Lock()
 def output(msg):
-    with outputlock:
-        print(msg)
+    logging.info(msg)
 
 
 def retry(times=2):
