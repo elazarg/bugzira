@@ -1,5 +1,14 @@
 #!/bin/bash
-
+# usage:
+#   ./find_commits.sh git_directory
+#
+# this script matches commits (SHA1) to the issue-keys (PROJECT-ID) they refer to
+# the output is in the form
+#   SHA1 ISSUE_KEY ISSUE_KEY ...
+#   SHA1 ISSUE_KEY ISSUE_KEY ...
+#
+# at the end, we output the list of projects found 
+ 
 function join_delimited {
  # The Art Of Copying And Pasting From Stackoverflow:
  local IFS="$1"; shift; echo "$*"; 

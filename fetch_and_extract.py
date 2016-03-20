@@ -1,4 +1,15 @@
-# details for issues can be found at
+'''
+Translates input of the form
+    SHA1 ISSUE_KEY ISSUE_KEY ...
+    SHA1 ISSUE_KEY ISSUE_KEY ...
+into independent lines of format specified by the user, one of 
+- simple JSON (default)
+- csv
+- raw: raw JSON, as received from JIRA's REST api
+
+The input can be prepared by running the script `./find_commits.sh [git_directory]` 
+'''
+# details about issues can be found at
 # https://confluence.atlassian.com/jira063/what-is-an-issue-683542485.html 
 # issue_key: A unique identifier for this issue, for example: ANGRY-304
 import json
@@ -16,7 +27,7 @@ FIELDS = (('issuetype',     'name'),
            ('status',       'id'),
            ('resolution',   'id'),
            ('summary',      ''),
-           #('description',  '')
+           ('description',  '')
            )
 
 @utils.retry(times=2)
