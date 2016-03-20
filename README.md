@@ -1,8 +1,12 @@
 # bugzira
-feature extraction from JIRA
+Extracting features from bugs mentioned in commits, on apache-projects using JIRA
+
+https://issues.apache.org/jira/secure/BrowseProjects.jspa#all
+https://git.apache.org/
 
 ## Examples
-    
+Assume that parent directory contains git folders for apache projects, e.g. ../hadoop/
+
     $ ./run.sh ../cassandra 
     Projects found: CASSANDRA
     {"commit":"26ad322358df31a6f9d6f078e45ebfb2beb52b56","issuetype":"Bug","key":"1686","priority":"4","project":"CASSANDRA","resolution":"1","status":"5","summary":"'o.a.c.dht.AbstractBounds missing serialVersionUID'"}
