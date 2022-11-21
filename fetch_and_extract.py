@@ -1,20 +1,20 @@
-'''
+"""
 Translates input of the form
     SHA1 ISSUE_KEY ISSUE_KEY ...
     SHA1 ISSUE_KEY ISSUE_KEY ...
-into independent lines of format specified by the user, one of 
+into independent lines of format specified by the user, one of
 - simple JSON (default)
 - csv
 - raw: raw JSON, as received from JIRA's REST api
 
-The input can be prepared by running the script `./find_commits.sh [git_directory]` 
-'''
+The input can be prepared by running the script `./find_commits.sh [git_directory]`
+"""
 # details about issues can be found at
 # https://confluence.atlassian.com/jira063/what-is-an-issue-683542485.html 
 # issue_key: A unique identifier for this issue, for example: ANGRY-304
 import json
 import sys
-                        
+
 import utils
 
 RAW = sys.argv[1:] == ['raw']
@@ -22,18 +22,19 @@ CSV = sys.argv[1:] == ['csv']
 
 URL = 'https://issues.apache.org/jira/'
 #           field     ,    subfield
-FIELDS = (('issuetype',     'name'),
-           ('priority',     'id'),
-           ('status',       'id'),
-           ('resolution',   'id'),
-           ('summary',      ''),
-           ('description',  '')
-           )
+FIELDS = (('issuetype', 'name'),
+          ('priority', 'id'),
+          ('status', 'id'),
+          ('resolution', 'id'),
+          ('summary', ''),
+          ('description', '')
+          )
+
 
 @utils.retry(times=2)
 def fetch_issue(issue_key):
-    '''There is a Python api for jira: pip install jira
-    but we wanted to avoid dependencies. and it's simple.'''
+    """There is a Python api for jira: pip install jira,
+    but we wanted to avoid dependencies. and it's simple."""
     query = URL + 'rest/api/2/issue/' + issue_key
     query += '?fields=' + ','.join(f for f, _rep in FIELDS)
     raw_issue = utils.fetch(query)
@@ -44,7 +45,7 @@ def fetch_and_compose(sha_issuekey):
     sha, issue_key = sha_issuekey
     try:
         res = fetch_issue(issue_key)
-    except:
+    except RuntimeError:
         # ignore communication failure
         return
     if not RAW:
@@ -58,7 +59,7 @@ def fetch_and_compose(sha_issuekey):
 
 
 def get_filtered(issue):
-    'translates complicated issue into simple format, with relevant items only'
+    """translates complicated issue into simple format, with relevant items only"""
     res = {}
     res['project'], res['key'] = issue['key'].split('-')
     for field, subfield in FIELDS:
@@ -72,18 +73,17 @@ def get_filtered(issue):
 
 
 def flatten_lines(lines):
-    '''lines are [sha1 issue_key issue_key issue_key...]
-    This function flatten them into [sha1 issue_key] [sha1 issue_key]...''' 
+    """lines are [sha1 issue_key issue_key issue_key...]
+    This function flatten them into [sha1 issue_key] [sha1 issue_key]..."""
     for line in lines:
         sha1, *issue_keys = line.strip().split()
         for issue_key in issue_keys:
             yield (sha1, issue_key)
 
 
-
 def main():
-    '''stdin is assumed to be the output of 
-         ./find_commits.sh [some project directory] [some project name]'''
+    """stdin is assumed to be the output of
+         ./find_commits.sh [some project directory] [some project name]"""
     worklist = flatten_lines(sys.stdin)
     from concurrent.futures import ThreadPoolExecutor as Executor
     with Executor(max_workers=150) as executor:

@@ -1,7 +1,10 @@
 import json
 import urllib.request as request
-import io, csv
+import io
+import csv
 import sys
+import logging
+
 
 def write_lines(filename, iterable):
     with open(filename, 'w', encoding='utf8') as out:
@@ -35,13 +38,13 @@ def fetch(url):
 
 
 def getitem(m, key, default=None):
-    'a helper for cases where the item is null'
+    """a helper for cases where the item is null"""
     if m is None: return str(default)
     return m[key]
 
 
-import logging
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(message)s')  
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(message)s')
+
 
 def output(msg):
     logging.info(msg)
@@ -49,6 +52,7 @@ def output(msg):
 
 def retry(times=2):
     assert times > 0
+
     def retry(f):
         def wrap(*args, **kwargs):
             for i in range(times, 0, -1):
@@ -57,14 +61,16 @@ def retry(times=2):
                 except Exception:
                     if i == 1:
                         raise
+
         return wrap
+
     return retry
 
 
 def exhaust(iterable):
     for _ in iterable:
         pass
-    
+
 
 def to_csv(iterable) -> str:
     with io.StringIO() as s:
