@@ -9,39 +9,42 @@ into independent lines of format specified by the user, one of
 
 The input can be prepared by running the script `./find_commits.sh [git_directory]`
 """
+
 # details about issues can be found at
-# https://confluence.atlassian.com/jira063/what-is-an-issue-683542485.html 
+# https://confluence.atlassian.com/jira063/what-is-an-issue-683542485.html
 # issue_key: A unique identifier for this issue, for example: ANGRY-304
 import json
 import sys
+import typing
 
 import utils
 
-RAW = sys.argv[1:] == ['raw']
-CSV = sys.argv[1:] == ['csv']
+RAW = sys.argv[1:] == ["raw"]
+CSV = sys.argv[1:] == ["csv"]
 
-URL = 'https://issues.apache.org/jira/'
+URL = "https://issues.apache.org/jira/"
 #           field     ,    subfield
-FIELDS = (('issuetype', 'name'),
-          ('priority', 'id'),
-          ('status', 'id'),
-          ('resolution', 'id'),
-          ('summary', ''),
-          ('description', '')
-          )
+FIELDS = (
+    ("issuetype", "name"),
+    ("priority", "id"),
+    ("status", "id"),
+    ("resolution", "id"),
+    ("summary", ""),
+    ("description", ""),
+)
 
 
 @utils.retry(times=2)
-def fetch_issue(issue_key):
+def fetch_issue(issue_key: str) -> dict[str, str | dict[str, str]]:
     """There is a Python api for jira: pip install jira,
     but we wanted to avoid dependencies. and it's simple."""
-    query = URL + 'rest/api/2/issue/' + issue_key
-    query += '?fields=' + ','.join(f for f, _rep in FIELDS)
+    query = URL + "rest/api/2/issue/" + issue_key
+    query += "?fields=" + ",".join(f for f, _rep in FIELDS)
     raw_issue = utils.fetch(query)
     return json.loads(raw_issue)
 
 
-def fetch_and_compose(sha_issuekey):
+def fetch_and_compose(sha_issuekey: str) -> None:
     sha, issue_key = sha_issuekey
     try:
         res = fetch_issue(issue_key)
@@ -50,20 +53,22 @@ def fetch_and_compose(sha_issuekey):
         return
     if not RAW:
         res = get_filtered(res)
-        res['commit'] = sha
+        res["commit"] = sha
         if CSV:
             res = utils.to_csv([v for _, v in sorted(res.items())])
         else:
-            res = json.dumps(res, sort_keys=True, separators=(',', ':'))
+            res = json.dumps(res, sort_keys=True, separators=(",", ":"))
     utils.output(res)
 
 
-def get_filtered(issue):
+def get_filtered(issue: dict[str, str | dict[str, str]]) -> dict[str, str]:
     """translates complicated issue into simple format, with relevant items only"""
-    res = {}
-    res['project'], res['key'] = issue['key'].split('-')
+    res = {
+        "project": (issue["key"].split("-"))[0],
+        "key": (issue["key"].split("-"))[1],
+    }
     for field, subfield in FIELDS:
-        res[field] = issue['fields'][field]
+        res[field] = issue["fields"][field]
         if not subfield:
             res[field] = repr(res[field])
         else:
@@ -72,7 +77,9 @@ def get_filtered(issue):
     return res
 
 
-def flatten_lines(lines):
+def flatten_lines(
+    lines: typing.Iterable[str],
+) -> typing.Iterator[typing.Tuple[str, str]]:
     """lines are [sha1 issue_key issue_key issue_key...]
     This function flatten them into [sha1 issue_key] [sha1 issue_key]..."""
     for line in lines:
@@ -83,12 +90,13 @@ def flatten_lines(lines):
 
 def main():
     """stdin is assumed to be the output of
-         ./find_commits.sh [some project directory] [some project name]"""
+    ./find_commits.sh [some project directory] [some project name]"""
     worklist = flatten_lines(sys.stdin)
     from concurrent.futures import ThreadPoolExecutor as Executor
+
     with Executor(max_workers=150) as executor:
         utils.exhaust(executor.map(fetch_and_compose, worklist))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
